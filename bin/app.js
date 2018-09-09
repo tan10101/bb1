@@ -2,6 +2,7 @@
 
 const program = require('commander');
 const api = require('..');
+const db = require('../models');
 
 program
   .option('-H, --host <host>', 'specify the host [0.0.0.0]', '0.0.0.0')
@@ -12,12 +13,16 @@ program
   .parse(process.argv);
 
 // create app
-
 const app = api({
   ratelimit: ~~program.ratelimit,
   duration: ~~program.ratelimitDuration
 });
 
-app.listen(program.port, program.host, ~~program.backlog);
-console.log('Listening on %s:%s', program.host, program.port);
-
+db.sequelize.sync({ force: false })
+  .then(() => {
+    app.context.db = db;
+    app.listen(program.port, program.host, ~~program.backlog);
+    console.log('Listening on %s:%s', program.host, program.port);
+    //console.log('app.context is', db);
+  })
+  .catch(err => console.log(err));

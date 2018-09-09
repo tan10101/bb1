@@ -9,13 +9,15 @@ const env = process.env.NODE_ENV || 'development';
 function api(opts) {
   opts = opts || {};
   const app = new Koa();
-  const router = new Router();
+  const router = require('./routes')(app);
 
   // logging
   if ( 'test' != env) {
-    // console.log(`env is [${env}]`);
-    const logger = new Logger();
-    app.use(logger);
+    console.log(`env is [${env}]`);
+    app.use(Logger());
+    // app.use((ctx) => {
+    //   app.log = Logger();
+    // });
   }
 
   app.use(KoaBody({
@@ -23,11 +25,6 @@ function api(opts) {
   }));
 
   // routing
-  const routeHome = require('./routes/home')(app, router);
-  const routeDisclaimer = require('./routes/disclaimer')(app, router);
-  const routeDisclosure = require('./routes/disclosure')(app, router);
-  const routeAuth = require('./routes/auth')(app, router);
-
   app.use(router.routes());
   app.use(router.allowedMethods({
     throw: true,
@@ -39,4 +36,3 @@ function api(opts) {
 }
 
 module.exports = api;
-
